@@ -1,0 +1,85 @@
+plugins {
+    id 'multiloader-loader'
+    id 'fabric-loom'
+    id 'com.gradleup.shadow'
+
+    id 'multiloader-publish'
+}
+
+def shadowedDeps = [
+        "com.electronwill.night-config:core:${night_config_version}",
+        "com.electronwill.night-config:toml:${night_config_version}"
+]
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
+    }
+
+    compileOnly(annotationProcessor("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip"))
+
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+
+    modImplementation "com.terraformersmc:modmenu:${modmenu_version}"
+
+    modImplementation "io.github.llamalad7:mixinextras-fabric:0.5.0"
+    include "io.github.llamalad7:mixinextras-fabric:0.5.0"
+
+    shadowedDeps.each {
+        implementation it
+        shadow it
+    }
+}
+
+shadowJar {
+    dependsOn jar
+    configurations = [project.configurations.shadow]
+    destinationDirectory = layout.buildDirectory.dir("devlibs").get().asFile
+    archiveClassifier = 'dev'
+    relocate 'com.electronwill.nightconfig', "${project.group}.shadow.nightconfig"
+
+    from(rootProject.file('LICENSE')) {
+        rename { "${it}_${mod_name}" }
+    }
+    includeEmptyDirs = false
+}
+
+tasks.named('jar', Jar) {
+    archiveClassifier = 'slim'
+}
+
+remapJar {
+    dependsOn shadowJar
+    inputFile.set(shadowJar.archiveFile)
+    archiveClassifier = ''
+}
+
+loom {
+    def aw = project(':common').file("src/main/resources/${mod_id}.accesswidener")
+    if (aw.exists()) {
+        accessWidenerPath = aw
+    }
+
+    mixin {
+        useLegacyMixinAp = true
+        defaultRefmapName.set("${mod_id}.refmap.json")
+    }
+
+    runs {
+        client {
+            client()
+            configName = 'Fabric Client'
+            ideConfigGenerated = true
+            runDir = 'runs/client'
+        }
+        server {
+            server()
+            configName = 'Fabric Server'
+            ideConfigGenerated = true
+            runDir = 'runs/server'
+        }
+    }
+}
