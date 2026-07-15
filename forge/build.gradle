@@ -1,0 +1,83 @@
+plugins {
+    id 'multiloader-loader'
+
+    id 'net.neoforged.moddev.legacyforge'
+
+    id 'multiloader-publish'
+}
+
+mixin {
+    add(sourceSets.main, "${mod_id}.refmap.json")
+
+    config("${mod_id}.mixins.json")
+    config("${mod_id}.forge.mixins.json")
+}
+
+legacyForge {
+    version = "${minecraft_version}-${forge_version}"
+
+    def at = project(':common').file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+    parchment {
+        minecraftVersion = parchment_minecraft
+        mappingsVersion = parchment_version
+    }
+    runs {
+        client {
+            client()
+        }
+        data {
+            data()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+        server {
+            server()
+        }
+    }
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+dependencies {
+    annotationProcessor "org.spongepowered:mixin:0.8.5-SNAPSHOT:processor"
+
+    compileOnly "com.electronwill.night-config:core:${night_config_version}"
+    compileOnly "com.electronwill.night-config:toml:${night_config_version}"
+}
+
+sourceSets.main.resources.srcDir 'src/generated/resources'
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+tasks.named('jar', Jar) {
+    finalizedBy 'reobfJar'
+    includeEmptyDirs = false
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    exclude '.cache/**'
+    manifest.attributes([
+            "MixinConfigs": "${mod_id}.mixins.json,${mod_id}.forge.mixins.json"
+    ])
+}
+
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+def markForge = { String configName ->
+    configurations.named(configName) {
+        attributes {
+            attribute(loaderAttribute, 'forge')
+        }
+    }
+}
+
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each(markForge)
+
+sourceSets.configureEach {
+    [compileClasspathConfigurationName, runtimeClasspathConfigurationName]
+            .each(markForge)
+}

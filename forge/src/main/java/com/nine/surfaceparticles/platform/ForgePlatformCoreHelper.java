@@ -1,0 +1,40 @@
+package com.nine.surfaceparticles.platform;
+
+import com.nine.surfaceparticles.SPCommon;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.loading.FMLLoader;
+import net.minecraftforge.fml.loading.FMLPaths;
+
+import java.nio.file.Path;
+
+public class ForgePlatformCoreHelper implements IPlatformCoreHelper {
+
+    @Override
+    public Path getConfigPath() {
+        return FMLPaths.CONFIGDIR.get();
+    }
+
+    @Override
+    public boolean inDevEnvironment() {
+        return !FMLLoader.isProduction();
+    }
+
+    @Override
+    public String modVersion() {
+        return ModList.get()
+                .getModContainerById(SPCommon.MODID)
+                .map(container -> container.getModInfo().getVersion().toString())
+                .orElse("0.0.0");
+    }
+
+    @Override
+    public String currentLoader() {
+        return "forge";
+    }
+
+    @Override
+    public boolean isModLoaded(String id) {
+        return ModList.get().isLoaded(id);
+    }
+
+}
