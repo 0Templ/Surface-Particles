@@ -1,5 +1,5 @@
 {
-  "screen.surfaceparticles.config.title": "SurfaceParticles Config",
+  "screen.surfaceparticles.config.title": "Surface Particles Config",
   "config.surfaceparticles.enable_sprint_particles": "Matching Sprint Particles",
   "config.surfaceparticles.enable_sprint_particles.tooltip": "Sprint particles come from the surface you actually run on (snow layers, carpets) and use its top texture with the biome tint",
   "config.surfaceparticles.enable_hit_particles": "Matching Block Hit Particles",
