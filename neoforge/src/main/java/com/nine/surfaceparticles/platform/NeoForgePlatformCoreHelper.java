@@ -16,7 +16,7 @@ public class NeoForgePlatformCoreHelper implements IPlatformCoreHelper {
 
     @Override
     public boolean inDevEnvironment() {
-        return !FMLLoader.getCurrent().isProduction();
+        return !FMLLoader.isProduction();
     }
 
     @Override

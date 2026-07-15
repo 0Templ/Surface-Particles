@@ -4,7 +4,6 @@ import com.nine.surfaceparticles.core.surface.Surface;
 import com.nine.surfaceparticles.core.texture.SurfaceTexture;
 import com.nine.surfaceparticles.core.texture.SurfaceTextures;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
@@ -12,8 +11,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class SurfaceParticle extends TerrainParticle {
 
     private static final float SHADE = 0.6F;
-
-    private final SingleQuadParticle.Layer layer;
 
     public SurfaceParticle(
             ClientLevel level,
@@ -44,16 +41,10 @@ public class SurfaceParticle extends TerrainParticle {
         super(level, x, y, z, xSpeed, ySpeed, zSpeed, state, pos);
 
         this.setSprite(texture.sprite());
-        this.layer = SingleQuadParticle.Layer.TERRAIN;
 
         int color = texture.color();
         this.rCol = SHADE * (color >> 16 & 0xFF) / 255.0F;
         this.gCol = SHADE * (color >> 8 & 0xFF) / 255.0F;
         this.bCol = SHADE * (color & 0xFF) / 255.0F;
-    }
-
-    @Override
-    public SingleQuadParticle.Layer getLayer() {
-        return this.layer;
     }
 }

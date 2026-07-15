@@ -6,7 +6,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [],
   "client": [
-    "ClientLevelMixin"
+    "ParticleEngineMixin"
   ],
   "server": [],
   "injectors": {

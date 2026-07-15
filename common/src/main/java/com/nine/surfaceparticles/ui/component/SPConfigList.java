@@ -48,8 +48,9 @@ public class SPConfigList extends ContainerObjectSelectionList<SPConfigList.Entr
         }
 
         @Override
-        public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float partialTick) {
-            this.widget.setPosition(this.getContentX(), this.getContentY() + (this.getContentHeight() - this.widget.getHeight()) / 2);
+        public void render(GuiGraphics graphics, int index, int top, int left, int width, int height,
+                           int mouseX, int mouseY, boolean hovered, float partialTick) {
+            this.widget.setPosition(left, top + (height - this.widget.getHeight()) / 2);
             this.widget.render(graphics, mouseX, mouseY, partialTick);
         }
 
