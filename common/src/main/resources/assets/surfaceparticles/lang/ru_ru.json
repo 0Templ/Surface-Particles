@@ -1,0 +1,9 @@
+{
+  "screen.surfaceparticles.config.title": "Настройки SurfaceParticles",
+  "config.surfaceparticles.enable_sprint_particles": "Улучшенные партиклы бега",
+  "config.surfaceparticles.enable_sprint_particles.tooltip": "Партиклы бега берутся с поверхности, по которой вы реально бежите (снежный покров, ковры), с её верхней текстурой и биомным цветом",
+  "config.surfaceparticles.enable_hit_particles": "Улучшенные партиклы при добыче",
+  "config.surfaceparticles.enable_hit_particles.tooltip": "Крошка при добыче использует текстуру той грани, по которой бьёте",
+  "config.surfaceparticles.enable_destroy_particles": "Улучшенные партиклы разрушения",
+  "config.surfaceparticles.enable_destroy_particles.tooltip": "Облако разрушения текстурируется по граням: внешние партиклы берут свою грань, внутренние остаются ванильными"
+}
