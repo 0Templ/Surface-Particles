@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "surfaceparticles",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "${description}",
+  "authors": [
+    "${mod_author}"
+  ],
+  "mixins": [
+    "surfaceparticles.fabric.mixins.json",
+    "surfaceparticles.mixins.json"
+  ],
+  "contact": {
+    "homepage": "${homepage}",
+    "sources": "${sources}",
+    "issues": "${issues}"
+  },
+  "license": "${license}",
+  "icon": "assets/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.nine.surfaceparticles.SPFabricClient"
+    ],
+    "modmenu": [
+      "com.nine.surfaceparticles.compat.modmenu.ModMenuSetup"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.14",
+    "fabric-api": ">=${fabric_version_minimum}",
+    "minecraft": "${minecraft_version_constraint}",
+    "java": ">=${java_version}"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}

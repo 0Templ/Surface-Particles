@@ -1,0 +1,29 @@
+plugins {
+    id 'fabric-loom' version '1.8-SNAPSHOT' apply false
+    id 'net.minecraftforge.gradle' version '[7.0.17,8)' apply false
+    id 'net.neoforged.moddev' version '2.0.49-beta' apply false
+    id 'com.gradleup.shadow' version '8.3.10' apply(false)
+
+    id "me.modmuss50.mod-publish-plugin" version "2.0.0-beta.2" apply false
+}
+
+
+allprojects {
+    repositories {
+        maven {
+            url = "https://modmaven.dev"
+        }
+        maven {
+            url "https://maven.shedaniel.me"
+        }
+        maven {
+            url "https://api.modrinth.com/maven"
+        }
+        maven {
+            url = "https://maven.terraformersmc.com/"
+        }
+        maven {
+            url "https://www.cursemaven.com"
+        }
+    }
+}

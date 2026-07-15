@@ -1,0 +1,9 @@
+{
+  "screen.surfaceparticles.config.title": "SurfaceParticles Config",
+  "config.surfaceparticles.enable_sprint_particles": "Matching Sprint Particles",
+  "config.surfaceparticles.enable_sprint_particles.tooltip": "Sprint particles come from the surface you actually run on (snow layers, carpets) and use its top texture with the biome tint",
+  "config.surfaceparticles.enable_hit_particles": "Matching Block Hit Particles",
+  "config.surfaceparticles.enable_hit_particles.tooltip": "Crack particles while mining use the texture of the face being hit",
+  "config.surfaceparticles.enable_destroy_particles": "Matching Block Destroy Particles",
+  "config.surfaceparticles.enable_destroy_particles.tooltip": "The break cloud is textured per face: outer particles take the face they sit on, inner ones keep the vanilla look"
+}

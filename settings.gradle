@@ -1,0 +1,45 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url "https://maven.architectury.dev/" }
+        mavenCentral()
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = 'Fabric'
+                    url = uri('https://maven.fabricmc.net')
+                }
+            }
+            filter {
+                includeGroupAndSubgroups('net.fabricmc')
+                includeGroup('fabric-loom')
+            }
+        }
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = 'Forge'
+                    url = uri('https://maven.minecraftforge.net')
+                }
+            }
+            filter {
+                includeGroupAndSubgroups('net.minecraftforge')
+            }
+        }
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+def projectName = providers.gradleProperty("project_name").orNull
+if (projectName == null) {
+    def modId = providers.gradleProperty("mod_id").orElse("mod").get()
+    def mc = providers.gradleProperty("minecraft_version").orElse("0.0.0").get()
+    projectName = "${modId}-${mc}"
+}
+
+rootProject.name = projectName
+
+include("common", "fabric", "neoforge")

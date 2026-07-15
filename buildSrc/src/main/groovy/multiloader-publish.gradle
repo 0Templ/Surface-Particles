@@ -1,0 +1,66 @@
+plugins {
+    id 'multiloader-loader'
+    id "me.modmuss50.mod-publish-plugin"
+}
+
+def csv = { String value ->
+    value.split(',')
+            .collect { it.trim() }
+            .findAll { !it.isEmpty() }
+}
+
+def changelogForVersion = { String version ->
+    def changelogFile = rootProject.file('CHANGELOG.md')
+    if (!changelogFile.exists()) return ""
+
+    def text = changelogFile.getText('UTF-8')
+
+    def pattern = ~/(?ms)^##\s*\[?${java.util.regex.Pattern.quote(version)}\]?[^\n]*\n(.*?)(?=^##\s|\z)/
+    def matcher = text =~ pattern
+
+    return matcher.find() ? matcher.group(1).trim() : ""
+}
+
+tasks.register("collectReleaseArtifacts") {
+    group = "release"
+    description = "Runs the artifact task"
+    dependsOn tasks.named(publishing_task)
+}
+
+def releaseTypeClass = publishMods.type.type
+def releaseType = releaseTypeClass.invokeMethod('of', project.version_type)
+
+publishMods {
+    file = tasks.named(project.publishing_task, Zip).flatMap { it.archiveFile }
+    changelog = changelogForVersion(project.version.toString())
+    type = releaseType
+    displayName = "[${project.loader_display}]${project.mod_display_name}-${project.mc_display_version}-${project.version.toString()}"
+
+    csv(project.loaders).each { String id ->
+        modLoaders.add(id)
+    }
+
+    curseforge {
+        accessToken = System.getenv("CURSEFORGE_TOKEN") ?: project.findProperty("CURSEFORGE_TOKEN")
+        projectId = curseforge_id
+        client = true
+        server = false
+        csv(project.publish_game_versions).each { String v ->
+            minecraftVersions.add(v)
+        }
+        csv(project.required_mods).each { String slug ->
+            requires(slug)
+        }
+    }
+
+    modrinth {
+        accessToken = System.getenv("MODRINTH_TOKEN") ?: project.findProperty("MODRINTH_TOKEN")
+        projectId = modrinth_id
+        csv(project.publish_game_versions).each { String v ->
+            minecraftVersions.add(v)
+        }
+        csv(project.required_mods).each { String slug ->
+            requires(slug)
+        }
+    }
+}
