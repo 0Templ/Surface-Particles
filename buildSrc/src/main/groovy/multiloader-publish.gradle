@@ -41,7 +41,7 @@ publishMods {
     }
 
     curseforge {
-        accessToken = System.getenv("CURSEFORGE_TOKEN") ?: project.findProperty("CURSEFORGE_TOKEN")
+        accessToken = (System.getenv("CURSEFORGE_TOKEN") ?: project.findProperty("CURSEFORGE_TOKEN"))?.toString()?.trim()
         projectId = curseforge_id
         client = true
         server = false
@@ -54,7 +54,7 @@ publishMods {
     }
 
     modrinth {
-        accessToken = System.getenv("MODRINTH_TOKEN") ?: project.findProperty("MODRINTH_TOKEN")
+        accessToken = (System.getenv("MODRINTH_TOKEN") ?: project.findProperty("MODRINTH_TOKEN"))?.toString()?.trim()
         projectId = modrinth_id
         csv(project.publish_game_versions).each { String v ->
             minecraftVersions.add(v)
