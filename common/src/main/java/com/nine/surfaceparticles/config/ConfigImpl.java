@@ -7,7 +7,6 @@ import com.nine.surfaceparticles.config.option.ConfigOption;
 import com.nine.surfaceparticles.config.option.ConfigRange;
 import com.nine.surfaceparticles.config.option.ConfigSide;
 import com.nine.surfaceparticles.platform.Platform;
-import net.minecraft.util.Mth;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,43 +53,26 @@ public class ConfigImpl {
             option.apply(spec);
         }
 
-        if (!matchesLoaderTarget(spec.target)) {
-            return new ConfigValue<>(
-                    key,
-                    defaultValue,
-                    spec.range,
-                    spec.section,
-                    spec.side,
-                    spec.target,
-                    spec.shouldSync,
-                    clazz,
-                    elementClass
-            );
-        }
-
-        CommentedFileConfig config = getConfig(spec.side);
         ConfigValue<T> value = new ConfigValue<>(
-                config,
+                CLIENT,
                 key,
                 defaultValue,
                 spec.range,
                 spec.section,
                 spec.side,
-                spec.target,
-                spec.shouldSync,
                 clazz,
                 elementClass
         );
 
-        if (config.get(value.path()) == null) {
-            config.set(value.path(), serialize(value.defaultValue(), value.clazz));
+        if (CLIENT.get(value.path()) == null) {
+            CLIENT.set(value.path(), value.serializeUnchecked(value.defaultValue()));
         }
 
-        clampStored(config, value);
+        clampStored(value);
 
         String comment = buildComment(spec.comment, spec.range, spec.hideConstraints, clazz);
         if (!comment.isBlank()) {
-            config.setComment(value.path(), comment);
+            CLIENT.setComment(value.path(), comment);
         }
         normalizeTomlSpacing(spec.side);
         REGISTERED_VALUES.add(value);
@@ -104,6 +86,9 @@ public class ConfigImpl {
 
     @SuppressWarnings("unchecked")
     private static <T> Class<T> tryGetClass(T defaultValue) {
+        if (defaultValue == null) {
+            return (Class<T>) Object.class;
+        }
         return (Class<T>) defaultValue.getClass();
     }
 
@@ -112,15 +97,6 @@ public class ConfigImpl {
             return list.get(0).getClass();
         }
         return null;
-    }
-
-    @Deprecated()
-    private static boolean matchesLoaderTarget(LoaderTarget target) {
-        return true;
-    }
-
-    private static CommentedFileConfig getConfig(ConfigSide side) {
-        return CLIENT;
     }
 
     private static String buildComment(
@@ -150,66 +126,12 @@ public class ConfigImpl {
         return String.join("\n", lines);
     }
 
-    private static void clampStored(
-            CommentedFileConfig config,
-            ConfigValue<?> value
-    ) {
-        Object current = config.get(value.path());
-        Object clamped = tryClamp(value, current);
-        if (clamped != null && !clamped.equals(current)) {
-            config.set(value.path(), clamped);
+    private static void clampStored(ConfigValue<?> value) {
+        Object current = CLIENT.get(value.path());
+        Object fixed = value.normalizeUnchecked(current);
+        if (fixed != null && !fixed.equals(current)) {
+            CLIENT.set(value.path(), value.serializeUnchecked(fixed));
         }
-    }
-
-    private static Object tryClamp(
-            ConfigValue<?> value,
-            Object input
-    ) {
-        if (input == null) {
-            return null;
-        }
-
-        Number min = value.min();
-        Number max = value.max();
-        if (min == null && max == null) {
-            return input;
-        }
-
-        if (input instanceof Integer intValue) {
-            return Mth.clamp(
-                    intValue,
-                    min != null ? min.intValue() : Integer.MIN_VALUE,
-                    max != null ? max.intValue() : Integer.MAX_VALUE
-            );
-        }
-        if (input instanceof Double doubleValue) {
-            return Mth.clamp(
-                    doubleValue,
-                    min != null ? min.doubleValue() : -Double.MAX_VALUE,
-                    max != null ? max.doubleValue() : Double.MAX_VALUE
-            );
-        }
-        if (input instanceof Float floatValue) {
-            return Mth.clamp(
-                    floatValue,
-                    min != null ? min.floatValue() : -Float.MAX_VALUE,
-                    max != null ? max.floatValue() : Float.MAX_VALUE
-            );
-        }
-        return input;
-    }
-
-    private static Object serialize(
-            Object value,
-            Class<?> clazz
-    ) {
-        if (value == null) {
-            return null;
-        }
-        if (clazz != null && clazz.isEnum()) {
-            return ((Enum<?>) value).name();
-        }
-        return value;
     }
 
     private static File getConfigPath(String id) {

@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public final class BreakParticleHandler {
 
@@ -39,7 +40,8 @@ public final class BreakParticleHandler {
         if (Platform.CORE.handleHitEffects(state, level, pos, direction, hit, Minecraft.getInstance().particleEngine)) {
             return true;
         }
-        BreakParticleEmitter.crackEffect(level, pos, direction);
+        Vec3 hitLocation = hit == null ? null : hit.getLocation();
+        BreakParticleEmitter.crackEffect(level, pos, direction, hitLocation);
         return true;
     }
 }

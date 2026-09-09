@@ -7,9 +7,7 @@ import com.nine.surfaceparticles.config.option.ConfigSide;
 
 public class ConfigSpec {
 
-    public boolean shouldSync = false;
     public ConfigSide side = ConfigSide.COMMON;
-    public LoaderTarget target = LoaderTarget.COMMON;
 
     public ConfigComment comment = ConfigComment.EMPTY;
     public ConfigSection section = ConfigSection.NONE;

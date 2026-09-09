@@ -29,7 +29,14 @@ public enum ConfigSection implements ConfigOption {
     }
 
     public String getFullKey() {
-        return key;
+        if (parent == null) {
+            return key;
+        }
+        String parentKey = parent.getFullKey();
+        if (parentKey.isBlank()) {
+            return key;
+        }
+        return key.isBlank() ? parentKey : parentKey + "." + key;
     }
 
     public String getKey() {
