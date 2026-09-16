@@ -3,6 +3,7 @@ package com.nine.surfaceparticles.core.emit;
 import com.nine.surfaceparticles.config.SPConfig;
 import com.nine.surfaceparticles.core.surface.Surface;
 import com.nine.surfaceparticles.core.surface.SurfaceResolver;
+import com.nine.surfaceparticles.core.tuning.ParticleTuning;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -41,11 +42,15 @@ public final class FootParticleEmitter {
         if (entityPos.getZ() != surfacePos.getZ()) {
             z = Mth.clamp(z, surfacePos.getZ(), surfacePos.getZ() + 1.0D);
         }
-        double y = Math.max(entity.getY(), surface.topY()) + 0.1D;
+        double y = Math.max(entity.getY(), surface.topY()) + ParticleTuning.SPRINT_Y_OFFSET;
 
         Vec3 movement = entity.getDeltaMovement();
         Minecraft.getInstance().particleEngine.add(new SurfaceParticle(
-                level, x, y, z, movement.x * -4.0D, 1.5D, movement.z * -4.0D, surface
+                level, x, y, z,
+                movement.x * -ParticleTuning.SPRINT_BACK_VELOCITY,
+                ParticleTuning.SPRINT_UP_VELOCITY,
+                movement.z * -ParticleTuning.SPRINT_BACK_VELOCITY,
+                surface
         ));
         return true;
     }

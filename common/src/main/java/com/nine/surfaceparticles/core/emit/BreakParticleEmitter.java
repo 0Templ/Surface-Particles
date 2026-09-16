@@ -3,6 +3,7 @@ package com.nine.surfaceparticles.core.emit;
 import com.nine.surfaceparticles.config.SPConfig;
 import com.nine.surfaceparticles.core.texture.SurfaceTexture;
 import com.nine.surfaceparticles.core.texture.SurfaceTextures;
+import com.nine.surfaceparticles.core.tuning.ParticleTuning;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
@@ -13,14 +14,13 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 public final class BreakParticleEmitter {
-
-    private static final double RIM_HEIGHT = 0.25D;
 
     private BreakParticleEmitter() {
     }
@@ -47,9 +47,9 @@ public final class BreakParticleEmitter {
             double sizeX = Math.min(1.0D, x2 - x1);
             double sizeY = Math.min(1.0D, y2 - y1);
             double sizeZ = Math.min(1.0D, z2 - z1);
-            int countX = Math.max(2, Mth.ceil(sizeX / 0.25D));
-            int countY = Math.max(2, Mth.ceil(sizeY / 0.25D));
-            int countZ = Math.max(2, Mth.ceil(sizeZ / 0.25D));
+            int countX = Math.max(ParticleTuning.BREAK_MIN_CELLS, Mth.ceil(sizeX / ParticleTuning.BREAK_GRID_STEP));
+            int countY = Math.max(ParticleTuning.BREAK_MIN_CELLS, Mth.ceil(sizeY / ParticleTuning.BREAK_GRID_STEP));
+            int countZ = Math.max(ParticleTuning.BREAK_MIN_CELLS, Mth.ceil(sizeZ / ParticleTuning.BREAK_GRID_STEP));
 
             for (int xi = 0; xi < countX; xi++) {
                 for (int yi = 0; yi < countY; yi++) {
@@ -75,7 +75,7 @@ public final class BreakParticleEmitter {
                                 level,
                                 pos.getX() + x, pos.getY() + y, pos.getZ() + z,
                                 relX - 0.5D, relY - 0.5D, relZ - 0.5D,
-                                state, pos, texture
+                                state, pos, texture, face
                         ));
                     }
                 }
@@ -103,6 +103,10 @@ public final class BreakParticleEmitter {
     }
 
     public static void crackEffect(ClientLevel level, BlockPos pos, Direction direction) {
+        crackEffect(level, pos, direction, null);
+    }
+
+    public static void crackEffect(ClientLevel level, BlockPos pos, Direction direction, Vec3 hitLocation) {
         BlockState state = level.getBlockState(pos);
         if (state.getRenderShape() == RenderShape.INVISIBLE) {
             return;
@@ -117,22 +121,33 @@ public final class BreakParticleEmitter {
         int z = pos.getZ();
         AABB bounds = shape.bounds();
         RandomSource random = level.getRandom();
-        double xp = x + random.nextDouble() * (bounds.maxX - bounds.minX - 0.2D) + 0.1D + bounds.minX;
-        double yp = y + random.nextDouble() * (bounds.maxY - bounds.minY - 0.2D) + 0.1D + bounds.minY;
-        double zp = z + random.nextDouble() * (bounds.maxZ - bounds.minZ - 0.2D) + 0.1D + bounds.minZ;
+        double inset = ParticleTuning.CRACK_RANDOM_INSET;
+        double xp;
+        double yp;
+        double zp;
+        if (hitLocation != null) {
+            xp = Mth.clamp(hitLocation.x, x + bounds.minX, x + bounds.maxX);
+            yp = Mth.clamp(hitLocation.y, y + bounds.minY, y + bounds.maxY);
+            zp = Mth.clamp(hitLocation.z, z + bounds.minZ, z + bounds.maxZ);
+        } else {
+            xp = x + random.nextDouble() * (bounds.maxX - bounds.minX - inset * 2.0D) + inset + bounds.minX;
+            yp = y + random.nextDouble() * (bounds.maxY - bounds.minY - inset * 2.0D) + inset + bounds.minY;
+            zp = z + random.nextDouble() * (bounds.maxZ - bounds.minZ - inset * 2.0D) + inset + bounds.minZ;
+        }
+        double offset = ParticleTuning.CRACK_FACE_OFFSET;
         switch (direction) {
-            case DOWN -> yp = y + bounds.minY - 0.1D;
-            case UP -> yp = y + bounds.maxY + 0.1D;
-            case NORTH -> zp = z + bounds.minZ - 0.1D;
-            case SOUTH -> zp = z + bounds.maxZ + 0.1D;
-            case WEST -> xp = x + bounds.minX - 0.1D;
-            case EAST -> xp = x + bounds.maxX + 0.1D;
+            case DOWN -> yp = y + bounds.minY - offset;
+            case UP -> yp = y + bounds.maxY + offset;
+            case NORTH -> zp = z + bounds.minZ - offset;
+            case SOUTH -> zp = z + bounds.maxZ + offset;
+            case WEST -> xp = x + bounds.minX - offset;
+            case EAST -> xp = x + bounds.maxX + offset;
         }
 
         SurfaceTextures.FaceTexture info = SurfaceTextures.faceInfo(state, level, pos, direction);
         SurfaceTexture texture = info.texture();
         if (info.tintedOverlay() && direction.getAxis().isHorizontal()) {
-            boolean rim = yp >= y + bounds.maxY - RIM_HEIGHT;
+            boolean rim = yp >= y + bounds.maxY - ParticleTuning.BREAK_GRID_STEP;
             texture = rim
                     ? SurfaceTextures.face(state, level, pos, Direction.UP)
                     : SurfaceTextures.particle(state, level, pos);
@@ -140,10 +155,10 @@ public final class BreakParticleEmitter {
 
         SurfaceParticle particle = new SurfaceParticle(
                 level, xp, yp, zp, 0.0D, 0.0D, 0.0D,
-                state, pos, texture
+                state, pos, texture, direction
         );
-        particle.setPower(0.2F);
-        particle.scale(0.6F);
+        particle.setPower(ParticleTuning.CRACK_POWER);
+        particle.scale(ParticleTuning.CRACK_SCALE);
         Minecraft.getInstance().particleEngine.add(particle);
     }
 
